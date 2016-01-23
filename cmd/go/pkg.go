@@ -350,7 +350,7 @@ func loadImport(path, srcDir string, parent *Package, stk *importStack, importPo
 	buildMode := build.ImportComment
 	if !go15VendorExperiment || mode&useVendor == 0 || path != origPath {
 		// Not vendoring, or we already found the vendored path.
-		buildMode |= build.IgnoreVendor
+		// DISABLED(shurcooL, for Go 1.5): buildMode |= build.IgnoreVendor
 	}
 	bp, err := buildContext.Import(path, srcDir, buildMode)
 	bp.ImportPath = importPath

@@ -681,7 +681,8 @@ func matchPackagesInFS(pattern string) []string {
 		// as not matching the pattern. Go 1.5 and earlier skipped, but that
 		// behavior means people miss serious mistakes.
 		// See golang.org/issue/11407.
-		if p, err := buildContext.ImportDir(path, 0); err != nil && (p == nil || len(p.InvalidGoFiles) == 0) {
+		// DISABLED(shurcooL, for Go 1.5): if p, err := buildContext.ImportDir(path, 0); err != nil && (p == nil || len(p.InvalidGoFiles) == 0) {
+		if _, err = build.ImportDir(path, 0); err != nil {
 			if _, noGo := err.(*build.NoGoError); !noGo {
 				log.Print(err)
 			}
