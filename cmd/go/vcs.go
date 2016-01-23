@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"internal/singleflight"
 	"log"
 	"net/url"
 	"os"
@@ -18,6 +17,8 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/gophergala2016/cmd-go-js/internal/singleflight"
 )
 
 // A vcsCmd describes how to use a version control system
