@@ -9,11 +9,12 @@ package main_test
 import (
 	"bytes"
 	"fmt"
-	"internal/testenv"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/gophergala2016/cmd-go-js/internal/testenv"
 )
 
 func TestVendorImports(t *testing.T) {

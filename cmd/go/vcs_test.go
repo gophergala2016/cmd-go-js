@@ -5,8 +5,9 @@
 package main
 
 import (
-	"internal/testenv"
 	"testing"
+
+	"github.com/gophergala2016/cmd-go-js/internal/testenv"
 )
 
 // Test that RepoRootForImportPath creates the correct RepoRoot for a given importPath.

@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"go/build"
 	"go/format"
-	"internal/testenv"
 	"io"
 	"io/ioutil"
 	"os"
@@ -22,6 +21,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gophergala2016/cmd-go-js/internal/testenv"
 )
 
 var (
