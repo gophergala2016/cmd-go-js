@@ -5,9 +5,10 @@
 package main_test
 
 import (
-	main "cmd/go"
 	"runtime"
 	"testing"
+
+	main "github.com/gophergala2016/cmd-go-js/cmd/go"
 )
 
 func TestNoteReading(t *testing.T) {
