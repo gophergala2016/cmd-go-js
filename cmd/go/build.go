@@ -1361,9 +1361,6 @@ func (b *builder) build(a *action) (err error) {
 		}
 	}
 
-	// WIP.
-	fmt.Println("<--------- got this far")
-
 	// Prepare Go import path list.
 	inc := b.includeArgs("-I", allArchiveActions(a))
 
@@ -1381,6 +1378,8 @@ func (b *builder) build(a *action) (err error) {
 	if ofile != a.objpkg {
 		objects = append(objects, ofile)
 	}
+
+	//fmt.Println("<--------- got this far")
 
 	// Copy .h files named for goos or goarch or goos_goarch
 	// to names using GOOS and GOARCH.
@@ -2085,21 +2084,30 @@ type generalToolchain struct {
 	compilerBin string
 }
 
+func noGeneralToolchain(method string) error {
+	log.Fatalf("generalToolchain.%s: not impl", method)
+	return nil
+}
+
 func (g generalToolchain) compiler() string {
 	return g.compilerBin
 }
 
 func (generalToolchain) linker() string {
-	noCompiler()
+	noGeneralToolchain("linker")
 	return ""
 }
 
 func (generalToolchain) gc(b *builder, p *Package, archive, obj string, asmhdr bool, importArgs []string, gofiles []string) (ofile string, out []byte, err error) {
-	return "", nil, noCompiler()
+	//goon.DumpExpr(p, archive, obj, asmhdr, importArgs, gofiles)
+	//log.Println("generalToolchain.gc:", p.ImportPath)
+	// Compiler (of individual packages) is not supported at this time.
+	return "", nil, nil
 }
 
 func (generalToolchain) asm(b *builder, p *Package, obj, ofile, sfile string) error {
-	return noCompiler()
+	log.Println("generalToolchain.asm:", p.ImportPath)
+	return nil
 }
 
 func (generalToolchain) pkgpath(basedir string, p *Package) string {
@@ -2108,19 +2116,43 @@ func (generalToolchain) pkgpath(basedir string, p *Package) string {
 }
 
 func (generalToolchain) pack(b *builder, p *Package, objDir, afile string, ofiles []string) error {
-	return noCompiler()
+	log.Println("generalToolchain.pack:", p.ImportPath)
+	return nil
 }
 
-func (generalToolchain) ld(b *builder, root *action, out string, allactions []*action, mainpkg string, ofiles []string) error {
-	return noCompiler()
+func (g generalToolchain) ld(b *builder, root *action, out string, allactions []*action, mainpkg string, ofiles []string) error {
+	//x// Linker is not supported at this time.
+	/*goon.DumpExpr(root.p.Dir, root.p.GoFiles) //goon.DumpExpr(root)
+	goon.DumpExpr(out)
+	//goon.DumpExpr(allactions)
+	goon.DumpExpr(mainpkg)
+	goon.DumpExpr(ofiles)
+	log.Println("generalToolchain.ld")*/
+
+	// HACK: GopherJS-specific for now.
+	/*var files[]string
+	for _, goFile := range root.p.GoFiles {
+		files = append(filepath.Join(root.p.Dir, goFile))
+	}*/
+
+	// TODO: buildToolExec.
+	cmdargs := []interface{}{g.compilerBin, "run"}
+	for _, goFile := range root.p.GoFiles {
+		cmdargs = append(cmdargs, goFile)
+	}
+
+	// HACK: Try to remove GOARCH=js.
+	env := []string{"GOARCH=amd64"}
+
+	return b.run(root.p.Dir, root.p.ImportPath, env, cmdargs...)
 }
 
 func (generalToolchain) ldShared(b *builder, toplevelactions []*action, out string, allactions []*action) error {
-	return noCompiler()
+	return noGeneralToolchain("ldShared")
 }
 
 func (generalToolchain) cc(b *builder, p *Package, objdir, ofile, cfile string) error {
-	return noCompiler()
+	return noGeneralToolchain("cc")
 }
 
 // The Go toolchain.
