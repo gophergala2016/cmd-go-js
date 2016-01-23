@@ -187,7 +187,12 @@ func (c buildCompiler) Set(value string) error {
 	case "gccgo":
 		buildToolchain = gccgoToolchain{}
 	default:
-		return fmt.Errorf("unknown compiler %q", value)
+		switch compilerBin, err := exec.LookPath(value); err {
+		case nil:
+			buildToolchain = generalToolchain{compilerBin: compilerBin}
+		default:
+			return fmt.Errorf("unknown compiler %q", value)
+		}
 	}
 	buildContext.Compiler = value
 	return nil
@@ -1356,6 +1361,9 @@ func (b *builder) build(a *action) (err error) {
 		}
 	}
 
+	// WIP.
+	fmt.Println("<--------- got this far")
+
 	// Prepare Go import path list.
 	inc := b.includeArgs("-I", allArchiveActions(a))
 
@@ -2069,6 +2077,49 @@ func (noToolchain) ldShared(b *builder, toplevelactions []*action, out string, a
 }
 
 func (noToolchain) cc(b *builder, p *Package, objdir, ofile, cfile string) error {
+	return noCompiler()
+}
+
+// General toolchain.
+type generalToolchain struct {
+	compilerBin string
+}
+
+func (g generalToolchain) compiler() string {
+	return g.compilerBin
+}
+
+func (generalToolchain) linker() string {
+	noCompiler()
+	return ""
+}
+
+func (generalToolchain) gc(b *builder, p *Package, archive, obj string, asmhdr bool, importArgs []string, gofiles []string) (ofile string, out []byte, err error) {
+	return "", nil, noCompiler()
+}
+
+func (generalToolchain) asm(b *builder, p *Package, obj, ofile, sfile string) error {
+	return noCompiler()
+}
+
+func (generalToolchain) pkgpath(basedir string, p *Package) string {
+	end := filepath.FromSlash(p.ImportPath + ".a")
+	return filepath.Join(basedir, end)
+}
+
+func (generalToolchain) pack(b *builder, p *Package, objDir, afile string, ofiles []string) error {
+	return noCompiler()
+}
+
+func (generalToolchain) ld(b *builder, root *action, out string, allactions []*action, mainpkg string, ofiles []string) error {
+	return noCompiler()
+}
+
+func (generalToolchain) ldShared(b *builder, toplevelactions []*action, out string, allactions []*action) error {
+	return noCompiler()
+}
+
+func (generalToolchain) cc(b *builder, p *Package, objdir, ofile, cfile string) error {
 	return noCompiler()
 }
 

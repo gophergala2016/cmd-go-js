@@ -16,6 +16,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	pathpkg "path"
 	"path/filepath"
 	"runtime"
@@ -480,8 +481,14 @@ func (ctxt *Context) Import(path string, srcDir string, mode ImportMode) (*Packa
 		pkgtargetroot = "pkg/" + ctxt.GOOS + "_" + ctxt.GOARCH + suffix
 		pkga = pkgtargetroot + "/" + p.ImportPath + ".a"
 	default:
-		// Save error for end of function.
-		pkgerr = fmt.Errorf("import %q: unknown compiler %q", path, ctxt.Compiler)
+		switch _, err := exec.LookPath(ctxt.Compiler); err {
+		case nil:
+			pkgtargetroot = "pkg/" + ctxt.Compiler + "_" + ctxt.GOOS + "_" + ctxt.GOARCH + suffix
+			pkga = pkgtargetroot + "/" + p.ImportPath + ".a"
+		default:
+			// Save error for end of function.
+			pkgerr = fmt.Errorf("import %q: unknown compiler %q", path, ctxt.Compiler)
+		}
 	}
 
 	binaryOnly := false
