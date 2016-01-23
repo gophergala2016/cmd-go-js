@@ -16,6 +16,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	pathpkg "path"
 	"path/filepath"
 	"runtime"
@@ -374,6 +375,7 @@ type Package struct {
 	SwigFiles      []string // .swig files
 	SwigCXXFiles   []string // .swigcxx files
 	SysoFiles      []string // .syso system object files to add to archive
+	JSFiles        []string // .js files to add to archive
 
 	// Cgo directives
 	CgoCFLAGS    []string // Cgo CFLAGS directives
@@ -480,8 +482,14 @@ func (ctxt *Context) Import(path string, srcDir string, mode ImportMode) (*Packa
 		pkgtargetroot = "pkg/" + ctxt.GOOS + "_" + ctxt.GOARCH + suffix
 		pkga = pkgtargetroot + "/" + p.ImportPath + ".a"
 	default:
-		// Save error for end of function.
-		pkgerr = fmt.Errorf("import %q: unknown compiler %q", path, ctxt.Compiler)
+		switch _, err := exec.LookPath(ctxt.Compiler); err {
+		case nil:
+			pkgtargetroot = "pkg/" + ctxt.Compiler + "_" + ctxt.GOOS + "_" + ctxt.GOARCH + suffix
+			pkga = pkgtargetroot + "/" + p.ImportPath + ".a"
+		default:
+			// Save error for end of function.
+			pkgerr = fmt.Errorf("import %q: unknown compiler %q", path, ctxt.Compiler)
+		}
 	}
 
 	binaryOnly := false
@@ -674,6 +682,8 @@ Found:
 			// the name was vetted above with goodOSArchFile.
 			p.SysoFiles = append(p.SysoFiles, name)
 			continue
+		case ".js":
+			p.JSFiles = append(p.JSFiles, name)
 		}
 
 		pf, err := parser.ParseFile(fset, filename, data, parser.ImportsOnly|parser.ParseComments)

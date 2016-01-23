@@ -82,7 +82,7 @@ and test commands:
 	-buildmode mode
 		build mode to use. See 'go help buildmode' for more.
 	-compiler name
-		name of compiler to use, as in runtime.Compiler (gccgo or gc).
+		name of compiler to use, as in runtime.Compiler (gccgo, gc or gopherjs).
 	-gccgoflags 'arg list'
 		arguments to pass on each gccgo compiler/linker invocation.
 	-gcflags 'arg list'
@@ -187,7 +187,12 @@ func (c buildCompiler) Set(value string) error {
 	case "gccgo":
 		buildToolchain = gccgoToolchain{}
 	default:
-		return fmt.Errorf("unknown compiler %q", value)
+		switch compilerBin, err := exec.LookPath(value); err {
+		case nil:
+			buildToolchain = generalToolchain{compilerBin: compilerBin}
+		default:
+			return fmt.Errorf("unknown compiler %q", value)
+		}
 	}
 	buildContext.Compiler = value
 	return nil
@@ -2070,6 +2075,89 @@ func (noToolchain) ldShared(b *builder, toplevelactions []*action, out string, a
 
 func (noToolchain) cc(b *builder, p *Package, objdir, ofile, cfile string) error {
 	return noCompiler()
+}
+
+// General toolchain.
+type generalToolchain struct {
+	compilerBin string
+}
+
+func noGeneralToolchain(method string) error {
+	log.Fatalf("generalToolchain.%s: not impl", method)
+	return nil
+}
+
+func (g generalToolchain) compiler() string {
+	return g.compilerBin
+}
+
+func (generalToolchain) linker() string {
+	noGeneralToolchain("linker")
+	return ""
+}
+
+func (generalToolchain) gc(b *builder, p *Package, archive, obj string, asmhdr bool, importArgs []string, gofiles []string) (ofile string, out []byte, err error) {
+	//goon.DumpExpr(p, archive, obj, asmhdr, importArgs, gofiles)
+	//log.Println("generalToolchain.gc:", p.ImportPath)
+	// Compiler (of individual packages) is not supported at this time.
+	if archive != "" {
+		ofile = archive
+	} else {
+		out := "_go_.o"
+		ofile = obj + out
+	}
+	//log.Println("generalToolchain.gc:", ofile)
+	return "", nil, nil
+}
+
+func (generalToolchain) asm(b *builder, p *Package, obj, ofile, sfile string) error {
+	//log.Println("generalToolchain.asm:", p.ImportPath)
+	return nil
+}
+
+func (generalToolchain) pkgpath(basedir string, p *Package) string {
+	end := filepath.FromSlash(p.ImportPath + ".a")
+	return filepath.Join(basedir, end)
+}
+
+func (generalToolchain) pack(b *builder, p *Package, objDir, afile string, ofiles []string) error {
+	//log.Println("generalToolchain.pack:", p.ImportPath)
+	return nil
+}
+
+func (g generalToolchain) ld(b *builder, root *action, out string, allactions []*action, mainpkg string, ofiles []string) error {
+	//x// Linker is not supported at this time.
+	/*goon.DumpExpr(root.p.Dir, root.p.GoFiles) //goon.DumpExpr(root)
+	goon.DumpExpr(out)
+	//goon.DumpExpr(allactions)
+	goon.DumpExpr(mainpkg)
+	goon.DumpExpr(ofiles)
+	log.Println("generalToolchain.ld")*/
+
+	// HACK: GopherJS-specific for now.
+	/*var files[]string
+	for _, goFile := range root.p.GoFiles {
+		files = append(filepath.Join(root.p.Dir, goFile))
+	}*/
+
+	// HACK: Try to remove GOARCH=js.
+	env := []string{"GOARCH=amd64"}
+
+	// TODO: buildToolExec.
+	cmdargs := []interface{}{g.compilerBin, "build", "-o", out}
+	for _, goFile := range root.p.GoFiles {
+		cmdargs = append(cmdargs, goFile)
+	}
+
+	return b.run(root.p.Dir, root.p.ImportPath, env, cmdargs...)
+}
+
+func (generalToolchain) ldShared(b *builder, toplevelactions []*action, out string, allactions []*action) error {
+	return noGeneralToolchain("ldShared")
+}
+
+func (generalToolchain) cc(b *builder, p *Package, objdir, ofile, cfile string) error {
+	return fmt.Errorf("%s: C source files not supported without cgo", mkAbs(p.Dir, cfile))
 }
 
 // The Go toolchain.
