@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	fmt.Printf("Hello brave new world! It's working on %v %v/%v!\n", runtime.Version(), build.Default.GOOS, build.Default.GOARCH)
+	fmt.Printf("Hello brave new world! It is working on %v %v/%v!\n", runtime.Version(), build.Default.GOOS, build.Default.GOARCH)
 }
