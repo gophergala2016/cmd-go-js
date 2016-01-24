@@ -375,6 +375,7 @@ type Package struct {
 	SwigFiles      []string // .swig files
 	SwigCXXFiles   []string // .swigcxx files
 	SysoFiles      []string // .syso system object files to add to archive
+	JSFiles        []string // .js files to add to archive
 
 	// Cgo directives
 	CgoCFLAGS    []string // Cgo CFLAGS directives
@@ -681,6 +682,8 @@ Found:
 			// the name was vetted above with goodOSArchFile.
 			p.SysoFiles = append(p.SysoFiles, name)
 			continue
+		case ".js":
+			p.JSFiles = append(p.JSFiles, name)
 		}
 
 		pf, err := parser.ParseFile(fset, filename, data, parser.ImportsOnly|parser.ParseComments)

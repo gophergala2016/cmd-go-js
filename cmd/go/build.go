@@ -1379,8 +1379,6 @@ func (b *builder) build(a *action) (err error) {
 		objects = append(objects, ofile)
 	}
 
-	//fmt.Println("<--------- got this far")
-
 	// Copy .h files named for goos or goarch or goos_goarch
 	// to names using GOOS and GOARCH.
 	// For example, defs_linux_amd64.h becomes defs_GOOS_GOARCH.h.
@@ -2102,11 +2100,18 @@ func (generalToolchain) gc(b *builder, p *Package, archive, obj string, asmhdr b
 	//goon.DumpExpr(p, archive, obj, asmhdr, importArgs, gofiles)
 	//log.Println("generalToolchain.gc:", p.ImportPath)
 	// Compiler (of individual packages) is not supported at this time.
+	if archive != "" {
+		ofile = archive
+	} else {
+		out := "_go_.o"
+		ofile = obj + out
+	}
+	//log.Println("generalToolchain.gc:", ofile)
 	return "", nil, nil
 }
 
 func (generalToolchain) asm(b *builder, p *Package, obj, ofile, sfile string) error {
-	log.Println("generalToolchain.asm:", p.ImportPath)
+	//log.Println("generalToolchain.asm:", p.ImportPath)
 	return nil
 }
 
@@ -2116,7 +2121,7 @@ func (generalToolchain) pkgpath(basedir string, p *Package) string {
 }
 
 func (generalToolchain) pack(b *builder, p *Package, objDir, afile string, ofiles []string) error {
-	log.Println("generalToolchain.pack:", p.ImportPath)
+	//log.Println("generalToolchain.pack:", p.ImportPath)
 	return nil
 }
 
@@ -2135,14 +2140,14 @@ func (g generalToolchain) ld(b *builder, root *action, out string, allactions []
 		files = append(filepath.Join(root.p.Dir, goFile))
 	}*/
 
+	// HACK: Try to remove GOARCH=js.
+	env := []string{"GOARCH=amd64"}
+
 	// TODO: buildToolExec.
-	cmdargs := []interface{}{g.compilerBin, "run"}
+	cmdargs := []interface{}{g.compilerBin, "build", "-o", out}
 	for _, goFile := range root.p.GoFiles {
 		cmdargs = append(cmdargs, goFile)
 	}
-
-	// HACK: Try to remove GOARCH=js.
-	env := []string{"GOARCH=amd64"}
 
 	return b.run(root.p.Dir, root.p.ImportPath, env, cmdargs...)
 }
@@ -2152,7 +2157,7 @@ func (generalToolchain) ldShared(b *builder, toplevelactions []*action, out stri
 }
 
 func (generalToolchain) cc(b *builder, p *Package, objdir, ofile, cfile string) error {
-	return noGeneralToolchain("cc")
+	return fmt.Errorf("%s: C source files not supported without cgo", mkAbs(p.Dir, cfile))
 }
 
 // The Go toolchain.
