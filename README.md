@@ -2,27 +2,49 @@
 
 cmd-go-js is a "feature branch" of cmd/go command with experimental changes. The goal was to explore adding support for additional Go compilers and environments by making use of existing -compiler and -exec flags:
 
-```
--compiler name
-	name of compiler to use, as in runtime.Compiler (gccgo or gc).
+> -compiler name - name of compiler to use, as in runtime.Compiler (gccgo or gc).
+>
+> -exec xprog - Run the test binary using xprog. The behavior is the same as in 'go run'. See 'go help run' for details.
 
--exec xprog
-    Run the test binary using xprog. The behavior is the same as
-    in 'go run'. See 'go help run' for details.
-```
+Specifically, I wanted to try adding support for [GopherJS compiler](https://github.com/gopherjs/gopherjs) which targets `GOARCH=js` architecture. It compiles Go code to JavaScript which can be executed by a JavaScript engine (such as V8 JavaScript Engine, Node.js, or any browser with JavaScript support).
 
-Specifically, I wanted to try adding support for [GopherJS compiler](https://github.com/gopherjs/gopherjs) which targets GOARCH=js architecture. It compiles Go code to JavaScript which can be executed by a JavaScript engine (such as V8 JavaScript Engine, Node.js, or any browser with JavaScript support).
+# Results
 
-#### What works
+You can now use `go` to build for `GOARCH=js` architecture! That is the only architecture that all browsers can execute natively, without any plugins.
 
 ```bash
-$ GOARCH=amd64 go build -compiler=gc .../hello-world
+# Normal build for GOARCH=amd64.
+$ go build ./samples/hello-world
+# Note that above implicitly means:
+# GOARCH=amd64 go build -compiler=gc ./samples/hello-world
 $ ./hello-world
 Hello brave new world! It is working on go1.5.3 darwin/amd64!
 
-$ GOARCH=js go build -compiler=gopherjs github.com/gophergala2016/cmd-go-js/cmd/samples/hello-world
+# Newly supported build for GOARCH=js.
+$ GOARCH=js go build -compiler=gopherjs ./samples/hello-world
 $ node ./hello-world
-Hello brave new world! It is working on go1.5.3 darwin/js!
+Hello brave new world! It is working on go1.5.3 darwin/js! That means you can execute it in browsers.
+```
+
+`go run` also works. You can use the `-exec` flag to have `node` execute the compiled JavaScript output.
+
+```bash
+$ go run ./samples/hello-world/main.go
+Hello brave new world! It is working on go1.5.3 darwin/amd64!
+
+$ GOARCH=js go run -compiler=gopherjs -exec=node ./samples/hello-world/main.go
+Hello brave new world! It is working on go1.5.3 darwin/js! That means you can execute it in browsers.
+```
+
+From https://golang.org/cmd/go/#hdr-Compile_and_run_Go_program:
+
+> If the -exec flag is not given, GOOS or GOARCH is different from the system default, and a program named go_$GOOS_$GOARCH_exec can be found on the current search path, 'go run' invokes the binary using that program, for example 'go_nacl_386_exec a.out arguments...'. This allows execution of cross-compiled programs when a simulator or other execution method is available.
+
+That means if you create `alias go_darwin_js_exec=node`, then you can just:
+
+```bash
+$ GOARCH=js go run -compiler=gopherjs ./samples/hello-world/main.go
+Hello brave new world! It is working on go1.5.3 darwin/js! That means you can execute it in browsers.
 ```
 
 
