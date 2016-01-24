@@ -82,7 +82,7 @@ and test commands:
 	-buildmode mode
 		build mode to use. See 'go help buildmode' for more.
 	-compiler name
-		name of compiler to use, as in runtime.Compiler (gccgo or gc).
+		name of compiler to use, as in runtime.Compiler (gccgo, gc or gopherjs).
 	-gccgoflags 'arg list'
 		arguments to pass on each gccgo compiler/linker invocation.
 	-gcflags 'arg list'
