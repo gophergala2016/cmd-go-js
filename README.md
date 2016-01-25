@@ -40,9 +40,10 @@ From https://golang.org/cmd/go/#hdr-Compile_and_run_Go_program:
 
 > If the -exec flag is not given, GOOS or GOARCH is different from the system default, and a program named go_$GOOS_$GOARCH_exec can be found on the current search path, 'go run' invokes the binary using that program, for example 'go_nacl_386_exec a.out arguments...'. This allows execution of cross-compiled programs when a simulator or other execution method is available.
 
-That means if you create `alias go_darwin_js_exec=node`, then you can just:
+That means if you create a symlink to `node` binary named `go_darwin_js_exec`, then you can just:
 
 ```bash
+$ ln -s /usr/local/bin/node $GOPATH/bin/go_darwin_js_exec
 $ GOARCH=js go run -compiler=gopherjs ./samples/hello-world/main.go
 Hello brave new world! It is working on go1.5.3 darwin/js! That means you can execute it in browsers.
 ```
@@ -51,7 +52,7 @@ Hello brave new world! It is working on go1.5.3 darwin/js! That means you can ex
 
 ### Installation
 
-**Note:** Due to time limits, this project works on OS X only. Adding support for other other systems is easy, but it hasn't been done yet.
+**Note:** Due to time limits, this project works on OS X only. Adding support for other other systems is easy, but it hasn't been done yet. See commit message of [`2dae5232`](https://github.com/gophergala2016/cmd-go-js/commit/2dae52322dcef1b91b9b363fa2301da735188370), that is the only blocker.
 
 Go 1.5 is required.
 
@@ -67,7 +68,11 @@ $ $GOPATH/bin/go version
 go version go1.5.3 darwin/amd64 (with experimental changes)
 ```
 
+You may need Node if you want to execute generated JavaScript from the command line rather than inside a browser.
 
+```
+brew install node
+```
 
 
 
