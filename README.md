@@ -10,6 +10,8 @@ Specifically, I wanted to try adding support for [GopherJS compiler](https://git
 
 # Results
 
+![](Screenshot.png)
+
 #### go build
 
 You can now use `go` to build for `GOARCH=js` architecture! That is the only architecture that all browsers can execute natively, without any plugins.
