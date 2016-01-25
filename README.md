@@ -10,6 +10,8 @@ Specifically, I wanted to try adding support for [GopherJS compiler](https://git
 
 # Results
 
+#### go build
+
 You can now use `go` to build for `GOARCH=js` architecture! That is the only architecture that all browsers can execute natively, without any plugins.
 
 ```bash
@@ -25,6 +27,8 @@ $ GOARCH=js go build -compiler=gopherjs ./samples/hello-world
 $ node ./hello-world
 Hello brave new world! It is working on go1.5.3 darwin/js! That means you can execute it in browsers.
 ```
+
+#### go run
 
 `go run` also works. You can use the `-exec` flag to have `node` execute the compiled JavaScript output.
 
@@ -43,12 +47,17 @@ From https://golang.org/cmd/go/#hdr-Compile_and_run_Go_program:
 That means if you create a symlink to `node` binary named `go_darwin_js_exec`, then you can just:
 
 ```bash
-$ ln -s /usr/local/bin/node $GOPATH/bin/go_darwin_js_exec
 $ GOARCH=js go run -compiler=gopherjs ./samples/hello-world/main.go
 Hello brave new world! It is working on go1.5.3 darwin/js! That means you can execute it in browsers.
 ```
 
+### Code changes
 
+The first five commits of [`master` branch](https://github.com/gophergala2016/cmd-go-js/commits/master) simply check in the original `cmd/go` binary source at commit [`go1.5.3`](https://github.com/golang/go/tree/go1.5.3), and make minimal changes to allow it to build on OS X and be go-gettable. It also vendors `go/build` package from standard library, in order to be able to make changes to it.
+
+The rest of the changes are the relevant changes to add `-compiler=gopherjs` support to be able to build for `GOARCH=js` architecture. These changes are relatively minimal (a couple hundred lines) and not disruptive. The diff can be seen here:
+
+https://github.com/gophergala2016/cmd-go-js/compare/c900f90...master
 
 ### Installation
 
