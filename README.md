@@ -73,7 +73,7 @@ That means all of go support for [testing](https://godoc.org/testing) would be a
 
 `go` defines a very clean `toolchain` interface:
 
-```
+```Go
 type toolchain interface {
 	// gc runs the compiler in a specific directory on a set of files
 	// and returns the name of the generated output file.
@@ -131,7 +131,7 @@ default:
 
 Or create a general toolchain that can accept any arbitrary -compiler flag value:
 
-```
+```Go
 switch value {
 case "gc":
 	buildToolchain = gcToolchain{}
