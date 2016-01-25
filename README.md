@@ -71,7 +71,7 @@ That means all of go support for [testing](https://godoc.org/testing) would be a
 
 ### Toolchains
 
-`go` defines a very clean `toolchain` interface:
+`cmd/go` defines a very clean `toolchain` interface internally:
 
 ```Go
 type toolchain interface {
